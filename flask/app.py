@@ -22,7 +22,7 @@ def home():
     </form>
     <ul>
         {% for task in tasks %}
-        <li>{{ task }} <a href="/delete/{{ loop.index0 }}">x</a></li>
+        <li>{{ task }} <a href="/delete/{{ loop.index0 }}">Delete</a></li>
         {% endfor %}
     </ul>
 </body>
