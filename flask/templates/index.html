@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sudoku Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; }
+        table { border-collapse: collapse; margin: 20px auto; }
+        td {
+            border: 1px solid #000;
+            width: 40px; height: 40px;
+            text-align: center;
+        }
+        input {
+            width: 38px; height: 38px;
+            font-size: 18px; text-align: center;
+            border: none;
+        }
+        .btn { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .thick-border { border: 2px solid black; }
+    </style>
+</head>
+<body>
+    <h1>Sudoku Game</h1>
+    <button class="btn" onclick="newGame()">New Game</button>
+    <button class="btn" onclick="checkSolution()">Check Solution</button>
+    <p id="status"></p>
+    <table id="board"></table>
+
+    <script>
+        async function loadBoard() {
+            let res = await fetch("/board");
+            let data = await res.json();
+            renderBoard(data.board);
+        }
+
+        function renderBoard(board) {
+            let table = document.getElementById("board");
+            table.innerHTML = "";
+            for (let i = 0; i < 9; i++) {
+                let row = document.createElement("tr");
+                for (let j = 0; j < 9; j++) {
+                    let cell = document.createElement("td");
+                    if (i % 3 === 0) cell.classList.add("thick-border");
+                    if (j % 3 === 0) cell.classList.add("thick-border");
+
+                    let input = document.createElement("input");
+                    input.type = "text";
+                    input.maxLength = 1;
+                    input.value = board[i][j] === 0 ? "" : board[i][j];
+                    if (board[i][j] !== 0) input.disabled = true;
+
+                    input.addEventListener("change", async () => {
+                        let num = parseInt(input.value);
+                        if (isNaN(num) || num < 1 || num > 9) {
+                            input.value = "";
+                            return;
+                        }
+                        let move = { row: i, col: j, num: num };
+                        let res = await fetch("/move", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(move)
+                        });
+                        let result = await res.json();
+                        if (result.error) {
+                            alert(result.error);
+                            input.value = "";
+                        }
+                    });
+
+                    cell.appendChild(input);
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+        }
+
+        async function newGame() {
+            let res = await fetch("/new");
+            let data = await res.json();
+            renderBoard(data.board);
+            document.getElementById("status").innerText = "";
+        }
+
+        async function checkSolution() {
+            let res = await fetch("/check");
+            let data = await res.json();
+            if (data.solved) {
+                document.getElementById("status").innerText = "🎉 Congratulations! You solved it!";
+            } else {
+                document.getElementById("status").innerText = "❌ Not solved yet. Keep trying!";
+            }
+        }
+
+        // Load game on startup
+        loadBoard();
+    </script>
+</body>
+</html>
