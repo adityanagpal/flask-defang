@@ -57,7 +57,7 @@ def is_solved(board):
 
 def generate_board():
     board = [[0] * 9 for _ in range(9)]
-    for _ in range(120):
+    for _ in range(15):
         row, col, num = random.randint(0, 8), random.randint(0, 8), random.randint(1, 9)
         if board[row][col] == 0 and is_valid_move(board, row, col, num):
             board[row][col] = num
